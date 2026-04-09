@@ -1,4 +1,4 @@
-# Agentic Skills Workshop
+# Course Creator
 
 A content-agnostic course creator system. Define courses using manifests and templates; use agents and skills to generate, deliver, and grade course content.
 
