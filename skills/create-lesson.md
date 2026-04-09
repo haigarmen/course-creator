@@ -3,7 +3,7 @@ name: create-lesson
 description: Add a new lesson stub to a specific module within an existing course.
 version: "1.0.0"
 tags: [education, lesson, content-authoring, module]
-repository: https://github.com/haigarmen/agentic-skills-workshop
+repository: https://github.com/haigarmen/course-creator
 compatibility: [claude-code, claude]
 ---
 
