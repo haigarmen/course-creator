@@ -2,6 +2,9 @@
 name: validate-course
 description: Validate a course manifest and directory structure for completeness and consistency.
 version: "1.0.0"
+tags: [education, validation, course, quality]
+repository: https://github.com/haigarmen/agentic-skills-workshop
+compatibility: [claude-code, claude]
 ---
 
 1. Ask the user for the `course_id` to validate.

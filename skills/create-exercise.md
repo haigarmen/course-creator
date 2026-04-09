@@ -2,6 +2,9 @@
 name: create-exercise
 description: Add a new exercise from the template, optionally linking it to a lesson.
 version: "1.0.0"
+tags: [education, exercise, content-authoring, practice]
+repository: https://github.com/haigarmen/agentic-skills-workshop
+compatibility: [claude-code, claude]
 ---
 
 1. Ask the user for:
