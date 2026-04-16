@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-04-16
+
+### Fixed
+- `/export-course` skill (v1.1.0): HTML export now includes a mandatory pandoc post-processing step to fix Mermaid diagram rendering. Pandoc HTML-escapes code block contents (`-->` → `--&gt;`, `"` → `&quot;`, etc.) and wraps Mermaid blocks in a redundant `<code>` tag — both of which cause Mermaid.js to report "Syntax error in text". The fix: strip the inner `<code>`/`</code>` wrapper and unescape all HTML entities in every `<pre class="mermaid">` block before writing the final file. A direct Python fallback path (no pandoc) is also documented, specifying that Mermaid block contents must never be HTML-escaped.
+
 ## [0.4.0] - 2026-04-16
 
 ### Added
