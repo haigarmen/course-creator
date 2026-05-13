@@ -386,7 +386,6 @@ def build_combined_md(course):
         f"*{course['title']} — Version {course['version']} — Exported: {today}*\n\n---\n\n",
         f"| | |\n|---|---|\n",
         f"| **Version** | {course['version']} |\n",
-        f"| **Total Hours** | {course['hours']} hours |\n",
         f"| **Disciplines** | {tags} |\n",
         f"| **Prerequisites** | {prereq} |\n\n",
     ]
@@ -431,16 +430,14 @@ def build_html(course):
     # Cover — lab_title (if set) becomes the h1; course title drops to cover-label
     display_title = htmllib.escape(course['lab_title']) if course['lab_title'] else title
     cover_label   = htmllib.escape(course['title']) if course['lab_title'] else 'Course Document'
-    cover_sub     = htmllib.escape(course['subtitle']) if course['subtitle'] else desc
+    subtitle_html = f'\n  <p class="subtitle">{htmllib.escape(course["subtitle"])}</p>' if course['subtitle'] else ''
     byline_html   = f'\n  <p class="cover-byline">{htmllib.escape(course["byline"])}</p>' if course['byline'] else ''
     parts.append(f"""
 <div class="cover">
   <div class="cover-label">{cover_label}</div>
-  <h1>{display_title}</h1>
-  <p class="subtitle">{cover_sub}</p>{byline_html}
+  <h1>{display_title}</h1>{subtitle_html}{byline_html}
   <div class="cover-meta">
     <div class="cover-meta-item"><span class="label">Version</span><span class="value">v{htmllib.escape(course['version'])}</span></div>
-    <div class="cover-meta-item"><span class="label">Total Hours</span><span class="value">{course['hours']} hours</span></div>
     <div class="cover-meta-item"><span class="label">Disciplines</span><span class="value">{htmllib.escape(tags)}</span></div>
     <div class="cover-meta-item"><span class="label">Prerequisites</span><span class="value">{htmllib.escape(prereq)}</span></div>
   </div>
