@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-13
+
+### Added
+- **Stage C — Word Document** added to `/export-course` skill (v3.0.0): pandoc converts `<course-id>-combined.md` → `<course-id>-course-document.docx`; `stage: docx` re-runs Stage C independently; skill description, overview, and output section updated
+- **Course version in outputs**: `version` field from `course.yml` is now embedded in the HTML cover metadata grid and the combined markdown cover table, so every exported document carries its own version number
+- **`/export-course` added to Quickstart** in `README.md`
+
+### Changed
+- `skills/build_course_html.py` rewritten as a fully generic builder — reads all course structure from `course.yml`, `module.yml`, and `lesson.md` frontmatter; no hardcoded course data; CLI usage: `python3 build_course_html.py <path/to/course>`; runs all three stages (A, B, C) in sequence
+- `skills/build_tumo2026_html.py` deleted — superseded by the generic builder
+- `course-generator` agent Stage 6 updated to describe all three sub-stages (A, B, C) and list `<course-id>-course-document.docx` in the output table
+- `README.md` overhauled: added version, Course Generator Pipeline table (6 stages), Export Pipeline section, build script usage, and accent/version field guidance
+- `accent` and `accent2` fields added to `courses/tumo2026/course.yml` (`#e05a00` / `#5a00e0`) and `courses/guitar-pedal-course-2/course.yml` (`#c0392b` / `#8e44ad`) — colors now documented in manifests rather than being implicit script defaults
+
 ## [0.5.2] - 2026-04-16
 
 ### Fixed

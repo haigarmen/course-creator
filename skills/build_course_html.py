@@ -69,6 +69,7 @@ def read_course(course_path):
         'id':          yml_str(yml, 'id'),
         'title':       yml_str(yml, 'title'),
         'description': yml_str(yml, 'description'),
+        'version':     yml_str(yml, 'version', '1.0.0'),
         'hours':       yml_int(yml, 'estimated_hours', 0),
         'tags':        yml_list(yml, 'tags'),
         'prereqs':     yml_list(yml, 'prerequisites'),
@@ -374,8 +375,9 @@ def build_combined_md(course):
     parts = [
         f"# {course['title']}\n\n",
         f"{course['description']}\n",
-        f"*Exported: {today}*\n\n---\n\n",
+        f"*Version {course['version']} — Exported: {today}*\n\n---\n\n",
         f"| | |\n|---|---|\n",
+        f"| **Version** | {course['version']} |\n",
         f"| **Total Hours** | {course['hours']} hours |\n",
         f"| **Disciplines** | {tags} |\n",
         f"| **Prerequisites** | {prereq} |\n\n",
@@ -409,7 +411,8 @@ def build_html(course):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{title} — Course Document</title>
+<meta name="version" content="{htmllib.escape(course['version'])}">
+<title>{title} v{htmllib.escape(course['version'])} — Course Document</title>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>mermaid.initialize({{ startOnLoad: true, theme: 'neutral', fontSize: 13 }});</script>
 <style>{css}</style>
@@ -424,6 +427,7 @@ def build_html(course):
   <h1>{title}</h1>
   <p class="subtitle">{desc}</p>
   <div class="cover-meta">
+    <div class="cover-meta-item"><span class="label">Version</span><span class="value">v{htmllib.escape(course['version'])}</span></div>
     <div class="cover-meta-item"><span class="label">Total Hours</span><span class="value">{course['hours']} hours</span></div>
     <div class="cover-meta-item"><span class="label">Disciplines</span><span class="value">{htmllib.escape(tags)}</span></div>
     <div class="cover-meta-item"><span class="label">Prerequisites</span><span class="value">{htmllib.escape(prereq)}</span></div>
@@ -493,7 +497,7 @@ if __name__ == '__main__':
     print(f"Reading course from: {course_path}")
     course = read_course(course_path)
     cid = course['id']
-    print(f"Course: {course['title']}  ({len(course['modules'])} modules, "
+    print(f"Course: {course['title']}  v{course['version']}  ({len(course['modules'])} modules, "
           f"{sum(len(m['lessons']) for m in course['modules'])} lessons)")
 
     # Stage A — combined.md
