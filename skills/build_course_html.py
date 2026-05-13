@@ -68,6 +68,9 @@ def read_course(course_path):
     course = {
         'id':          yml_str(yml, 'id'),
         'title':       yml_str(yml, 'title'),
+        'lab_title':   yml_str(yml, 'lab_title'),
+        'subtitle':    yml_str(yml, 'subtitle'),
+        'byline':      yml_str(yml, 'byline'),
         'description': yml_str(yml, 'description'),
         'version':     yml_str(yml, 'version', '1.0.0'),
         'hours':       yml_int(yml, 'estimated_hours', 0),
@@ -260,6 +263,7 @@ CSS_TEMPLATE = """
 
   .cover {{ min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 4rem 0 6rem; border-bottom: 3px solid var(--black); margin-bottom: 3rem; page-break-after: always; }}
   .cover-label {{ font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }}
+  .cover-byline {{ font-size: 0.95rem; color: var(--mid); margin-top: -1rem; margin-bottom: 2rem; }}
   .cover h1 {{ font-size: 3rem; font-weight: 700; line-height: 1.1; color: var(--black); margin-bottom: 1.5rem; }}
   .cover .subtitle {{ font-size: 1.15rem; color: var(--mid); max-width: 520px; margin-bottom: 3rem; line-height: 1.6; }}
   .cover-meta {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; border-top: 1px solid var(--rule); padding-top: 2rem; }}
@@ -372,10 +376,14 @@ def build_combined_md(course):
     tags  = ' · '.join(course['tags']) if course['tags'] else ''
     prereq = course['prereqs'][0] if course['prereqs'] else 'None'
 
+    display_title = course['lab_title'] or course['title']
+    sub_line = f"{course['subtitle']}\n" if course['subtitle'] else f"{course['description']}\n"
+    byline_line = f"*{course['byline']}*\n\n" if course['byline'] else ''
     parts = [
-        f"# {course['title']}\n\n",
-        f"{course['description']}\n",
-        f"*Version {course['version']} — Exported: {today}*\n\n---\n\n",
+        f"# {display_title}\n\n",
+        sub_line,
+        byline_line,
+        f"*{course['title']} — Version {course['version']} — Exported: {today}*\n\n---\n\n",
         f"| | |\n|---|---|\n",
         f"| **Version** | {course['version']} |\n",
         f"| **Total Hours** | {course['hours']} hours |\n",
@@ -420,12 +428,16 @@ def build_html(course):
 <body>
 """]
 
-    # Cover
+    # Cover — lab_title (if set) becomes the h1; course title drops to cover-label
+    display_title = htmllib.escape(course['lab_title']) if course['lab_title'] else title
+    cover_label   = htmllib.escape(course['title']) if course['lab_title'] else 'Course Document'
+    cover_sub     = htmllib.escape(course['subtitle']) if course['subtitle'] else desc
+    byline_html   = f'\n  <p class="cover-byline">{htmllib.escape(course["byline"])}</p>' if course['byline'] else ''
     parts.append(f"""
 <div class="cover">
-  <div class="cover-label">Course Document</div>
-  <h1>{title}</h1>
-  <p class="subtitle">{desc}</p>
+  <div class="cover-label">{cover_label}</div>
+  <h1>{display_title}</h1>
+  <p class="subtitle">{cover_sub}</p>{byline_html}
   <div class="cover-meta">
     <div class="cover-meta-item"><span class="label">Version</span><span class="value">v{htmllib.escape(course['version'])}</span></div>
     <div class="cover-meta-item"><span class="label">Total Hours</span><span class="value">{course['hours']} hours</span></div>
