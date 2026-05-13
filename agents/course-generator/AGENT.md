@@ -95,9 +95,9 @@ Run these two sub-tasks in parallel:
 
 ### Stage 6 — Course Document Export
 
-**Goal:** Compile all course content into a combined `.md` file + `assets/` folder, then render to a self-contained HTML document.
+**Goal:** Compile all course content into a combined `.md` file + `assets/` folder, then render to both a self-contained HTML document and a Word (.docx) document.
 
-Run the `export-course` skill (`stage: both`). It executes two sub-stages:
+Run the `export-course` skill (`stage: both`). It executes three sub-stages in order:
 
 **Stage A — Assemble:**
 - Collect course metadata from `course.yml` and all `module.yml` files
@@ -106,13 +106,19 @@ Run the `export-course` skill (`stage: both`). It executes two sub-stages:
 - Detect stub/empty sections and inject `- [ ] TODO:` markers; prepend a summary to-do block if any stubs exist
 - Write to `courses/<course-id>/<course-id>-combined.md` (persistent, editable artifact)
 
-**Stage B — Render:**
-- Run pandoc on the combined `.md` → `courses/<course-id>/<course-id>-course-document.html`
+**Stage B — Render HTML:**
+- Read lesson markdown files directly through the custom Python builder (same design system as `tumo2026-course-document.html`)
+- Apply semantic HTML transformations: `## Overview` → `.lesson-overview`, `## Learning Objectives` → `.objectives`, `## Environment` → `.env-box`, `## Materials` → `.materials-box`, `## Session Plan` → `.session-plan` with `.time-block` rows, `## Key Takeaways` → `.takeaways`, `## Next Steps` → `.next-steps`
 - Post-process Mermaid blocks (strip inner `<code>` wrapper, unescape HTML entities)
 - Inject Inter + JetBrains Mono fonts, CSS, and Mermaid.js CDN script into `<head>`
-- If pandoc unavailable, use Python fallback to write minimal HTML directly
+- Write to `courses/<course-id>/<course-id>-course-document.html`
 
-- Output: `courses/<course-id>/<course-id>-combined.md`, `courses/<course-id>/assets/`, `courses/<course-id>/<course-id>-course-document.html`
+**Stage C — Word Document:**
+- Run pandoc on `<course-id>-combined.md` → `courses/<course-id>/<course-id>-course-document.docx`
+- Command: `pandoc <combined.md> --from markdown --to docx --highlight-style pygments -o <course-document.docx>`
+- If pandoc unavailable, report and skip — HTML is the primary deliverable
+
+- Output: `courses/<course-id>/<course-id>-combined.md`, `courses/<course-id>/assets/`, `courses/<course-id>/<course-id>-course-document.html`, `courses/<course-id>/<course-id>-course-document.docx`
 
 ---
 
@@ -159,6 +165,7 @@ A fully populated course directory at `courses/<course-id>/` containing:
 | `<course-id>-combined.md` | 6 | Combined editable markdown with to-do markers |
 | `assets/` | 6 | Folder of images and SVGs extracted from lessons |
 | `<course-id>-course-document.html` | 6 | Standalone HTML with ToC, Mermaid.js, and embedded styles |
+| `<course-id>-course-document.docx` | 6 | Word document rendered from combined markdown via pandoc |
 
 ## Execution Rules
 

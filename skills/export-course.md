@@ -1,20 +1,21 @@
 ---
 name: export-course
-description: Compile all lesson content into a combined .md file (with to-do markers and a sibling assets/ folder), then render to a standalone .html document.
-version: "2.0.0"
-tags: [export, documentation, publishing, pandoc, html, markdown, assets]
+description: Compile all lesson content into a combined .md file (with to-do markers and a sibling assets/ folder), then render to both a standalone .html document and a .docx Word document.
+version: "3.0.0"
+tags: [export, documentation, publishing, pandoc, html, docx, markdown, assets]
 repository: https://github.com/haigarmen/course-creator
 compatibility: [claude-code, claude]
 ---
 
 ## Overview
 
-The export pipeline has two explicit stages that produce two persistent artifacts:
+The export pipeline has three explicit stages that produce three persistent artifacts:
 
 1. **Stage A — Assemble:** Build `<course_id>-combined.md` + `assets/` folder inside the course directory.
-2. **Stage B — Render:** Convert `<course_id>-combined.md` → `<course_id>-course-document.html`.
+2. **Stage B — Render HTML:** Convert lesson files → `<course_id>-course-document.html` (custom Python builder with semantic CSS).
+3. **Stage C — Word Document:** Convert `<course_id>-combined.md` → `<course_id>-course-document.docx` via pandoc.
 
-Running `/export-course` always executes both stages in sequence. The `.md` file is kept as a first-class editable artifact — users can open it, tweak content or to-do items, then re-run just Stage B by passing `stage: render`.
+Running `/export-course` always executes all three stages in sequence (A → B → C). The `.md` file is kept as a first-class editable artifact — users can open it, tweak content, then re-run just Stage B or C with `stage: render` or `stage: docx`.
 
 ---
 
@@ -22,7 +23,7 @@ Running `/export-course` always executes both stages in sequence. The `.md` file
 
 - `course_id` — id of the course to export (e.g. `tumo2026`)
 - `course_path` — path to the course directory (default: `courses/<course_id>/`)
-- `stage` — `assemble` | `render` | `both` (default: `both`)
+- `stage` — `assemble` | `render` | `docx` | `both` (default: `both`; `both` runs all three stages A + B + C)
 
 ---
 
@@ -193,7 +194,18 @@ Apply these fixes to the markdown source of every lesson body **before** passing
 
 ### Build process
 
-Use pandoc for per-section markdown→HTML fragment conversion (`--from markdown --to html --highlight-style=pygments`), then apply the semantic transformations above in Python. The reference implementation is `skills/build_course_html.py`.
+Use pandoc for per-section markdown→HTML fragment conversion (`--from markdown --to html --highlight-style=pygments`), then apply the semantic transformations above in Python.
+
+**Build script:** `course-creator/skills/build_course_html.py`
+
+This is the single generic builder for all courses. It reads course structure dynamically from `course.yml`, `module.yml`, and `lesson.md` frontmatter — no hardcoded course data.
+
+Usage:
+```bash
+python3 course-creator/skills/build_course_html.py courses/<course-id>
+```
+
+The script lives in `course-creator/skills/` — never inside the course directory itself.
 
 **Mermaid fix:** strip inner `<code>` wrapper and unescape HTML entities in all mermaid blocks; use `<div class="mermaid">` not `<pre>`.
 
@@ -213,10 +225,38 @@ Use pandoc for per-section markdown→HTML fragment conversion (`--from markdown
 
 ---
 
+## Stage C — Word Document
+
+Reads `<course_path>/<course_id>-combined.md` (produced in Stage A) and uses pandoc to render a `.docx` Word document. The combined markdown is the source because it already has the correct linear order, cover section, and module dividers baked in.
+
+### C1. Run pandoc
+
+```bash
+pandoc "<course_path>/<course_id>-combined.md" \
+  --from markdown \
+  --to docx \
+  --highlight-style pygments \
+  -o "<course_path>/<course_id>-course-document.docx"
+```
+
+If pandoc is unavailable, report the error clearly and skip this stage — the HTML document is the primary deliverable.
+
+### C2. Post-generation check
+
+Verify the `.docx` file was created and is non-zero bytes. Report file size. If pandoc failed (non-zero exit code), display stderr and suggest running `brew install pandoc` or equivalent.
+
+### C3. Output
+
+Report:
+- Path to `<course_id>-course-document.docx` and file size
+
+---
+
 ## Output
 
 Return:
 - Path to `<course_id>-combined.md`
 - Path to `assets/` folder and file count
 - Path to `<course_id>-course-document.html` and file size
+- Path to `<course_id>-course-document.docx` and file size
 - One-line summary: module count, lesson count, asset count, to-do item count
